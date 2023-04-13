@@ -41,9 +41,9 @@ class DiveraStatusSelect(SelectEntity):
     def select_option(self, option: str) -> None:
         """Change the selected option."""
         _LOGGER.info("Status: %s", option)
-        id = self._connector.get_state_if_from_name(option)
+        id = self._connector.get_state_id_by_name(option)
         _LOGGER.debug("Status Id: %s", id)
-        self._connector.set_status(id)
+        self._connector.set_state(id)
 
     async def async_added_to_hass(self) -> None:
         """Set up a listener and load data."""
@@ -63,7 +63,7 @@ class DiveraStatusSelect(SelectEntity):
     @property
     def options(self):
         """Return the state of the sensor."""
-        return self._connector.get_all_states()
+        return self._connector.get_all_state_name()
 
     @property
     def current_option(self):
