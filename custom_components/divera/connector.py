@@ -45,27 +45,7 @@ class DiveraData:
                 self.latest_update = timestamp
             _LOGGER.debug("Values updated at %s", self.latest_update)
 
-    def get_user(self):
-        """returns user_data"""
-        data = {}
-        data["firstname"] = self.data["data"]["user"]["firstname"]
-        data["lastname"] = self.data["data"]["user"]["lastname"]
-        data["fullname"] = data["firstname"] + " " + data["lastname"]
-        data["email"] = self.data["data"]["user"]["email"]
-        return data
-
-    def get_user(self, user_id):
-        """returns user_data"""
-        data = {}
-        data["firstname"] = self.data["data"]["cluster"]["consumer"][str(user_id)]["firstname"]
-        data["lastname"] = self.data["data"]["cluster"]["consumer"][str(user_id)]["lastname"]
-        data["fullname"] = data["firstname"] + " " + data["lastname"]
-        return data
-
-     def get_state_id(self):
-        """returns state.id of user"""
-        id = self.data["data"]["status"]["status_id"]
-        return id
+# sensor.divera_user.name_status
 
     def get_user_state(self):
         """returns state.name of user"""
@@ -73,7 +53,7 @@ class DiveraData:
         state_name = self.data["data"]["cluster"]["status"][str(id)]["name"]
         return state_name
 
-    def get_user_state(self, user_id):
+    def get_user_state(self, user_id:int):
         """returns state.name of user.id"""
         state_id = self.data["data"]["monitor"]["3"][str(user_id)]["status"]
         state_name = self.data["data"]["cluster"]["status"][str(state_id)]["name"]
@@ -87,7 +67,7 @@ class DiveraData:
         data["id"] = self.data["data"]["status"]["status_id"]
         return data
 
-    def get_user_state_attributes(self, user_id):      
+    def get_user_state_attributes(self, user_id:int):      
         """return aditional information of state"""
         data = {}
         timestamp = self.data["data"]["monitor"]["3"][str(user_id)]["ts"]
@@ -95,7 +75,9 @@ class DiveraData:
         data["id"] = self.data["data"]["monitor"]["3"][str(user_id)]["id"]
         return data
 
-    def get_last_alarm(self):
+# sensor.divera_alarm
+
+    def get_alarm(self):
         """return informations of last alarm"""
         sorting_list = self.data["data"]["alarm"]["sorting"]
         if len(sorting_list) > 0:
@@ -105,7 +87,12 @@ class DiveraData:
         else:
             return STATE_UNKNOWN
 
-    def get_last_alarm_attributes(self):
+    def get_alarm(self, alarm_id:int):
+        """return informations of alarm"""
+        alarm = self.data["data"]["alarm"]["items"][str(alarm_id)]
+        return alarm["title"]
+
+    def get_alarm_attributes(self):
         """return aditional information of last alarm"""
         sorting_list = self.data["data"]["alarm"]["sorting"]
         if len(sorting_list) > 0:
@@ -124,13 +111,68 @@ class DiveraData:
                 "closed": alarm["closed"],
                 "new": alarm["new"],
                 "self_addressed": alarm["ucr_self_addressed"],
+                "answered": alarm["ucr_self_addressed"],
+                "answeredcount": alarm["ucr_self_addressed"],
+                "read": alarm["ucr_self_addressed"],
             }
         else:
             return {}
 
+    def get_alarm_attributes(self, alarm_id:int):
+        """return aditional information of alarm"""
+        sorting_list = self.data["data"]["alarm"]["sorting"]
+        if len(sorting_list) > 0:
+            alarm = self.data["data"]["alarm"]["items"][str(alarm_id)]
+            groups = map(self.__search_group, alarm["group"])
+            return {
+                "id": alarm["id"],
+                "text": alarm["text"],
+                "date": datetime.fromtimestamp(alarm["date"]),
+                "address": alarm["address"],
+                "latitude": str(alarm["lat"]),
+                "longitude": str(alarm["lng"]),
+                "groups": list(groups),
+                "priority": alarm["priority"],
+                "closed": alarm["closed"],
+                "new": alarm["new"],
+                "self_addressed": alarm["ucr_self_addressed"],
+                "answered": alarm["ucr_answered"],
+                "answeredcount": alarm["ucr_answeredcount"],
+                "read": alarm["ucr_read"],
+            }
+        else:
+            return {}
 
+# helpers
 
-    def get_group_name_by_id(self, group_id):
+    def get_user_state_id(self):
+        """returns state.id of user"""
+        id = self.data["data"]["status"]["status_id"]
+        return id
+
+    def get_user_state_id(self, user_id:int):
+        """returns state.id of user"""
+        id = self.data["data"]["monitor"]["3"][str(user_id)]["status"]
+        return id
+
+    def get_user(self):
+        """returns user_data"""
+        data = {}
+        data["firstname"] = self.data["data"]["user"]["firstname"]
+        data["lastname"] = self.data["data"]["user"]["lastname"]
+        data["fullname"] = data["firstname"] + " " + data["lastname"]
+        data["email"] = self.data["data"]["user"]["email"]
+        return data
+
+    def get_user(self, user_id:int):
+        """returns user_data"""
+        data = {}
+        data["firstname"] = self.data["data"]["cluster"]["consumer"][str(user_id)]["firstname"]
+        data["lastname"] = self.data["data"]["cluster"]["consumer"][str(user_id)]["lastname"]
+        data["fullname"] = data["firstname"] + " " + data["lastname"]
+        return data
+
+    def get_group_name(self, group_id:int):
         """returns group.name from given group.id"""
         group = self.data["data"]["cluster"]["group"][str(group_id)]
         return group["name"]
@@ -148,7 +190,7 @@ class DiveraData:
         """return if of user"""
         return list(self.data["data"]["ucr"])[0]
 
-    def get_state_id_by_name(self, name):
+    def get_state_id(self, name):
         """returns state.id from given state.name"""
         for id in self.data["data"]["cluster"]["statussorting"]:
             state_name = self.data["data"]["cluster"]["status"][str(id)]["name"]
@@ -164,12 +206,19 @@ class DiveraData:
             states.append(state_name)
         return states
 
+    def get_all_user_id(self):
+        """returns available user.ids"""
+        states = []
+        for id in self.data["data"]["cluster"]["consumersorting"]:
+            states.append(id)
+        return states
+
     def get_user_state_id(self):
         """returns state.id of user"""
         id = self.data["data"]["status"]["status_id"]
         return id
 
-    def set_state(self, state_id):
+    def set_user_state(self, state_id:int):
         payload = json.dumps({"Status": {"id": state_id}})
         headers = {"Content-Type": "application/json"}
 

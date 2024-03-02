@@ -53,7 +53,7 @@ class DiveraSensor(Entity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self._connector.get_last_alarm()
+        return self._connector.get_alarm()
 
     @property
     def icon(self):
@@ -63,7 +63,7 @@ class DiveraSensor(Entity):
     @property
     def extra_state_attributes(self):
         """Return the state attributes of the device."""
-        return self._connector.get_last_alarm_attributes()
+        return self._connector.get_alarm_attributes()
 
     async def async_added_to_hass(self) -> None:
         """Set up a listener and load data."""

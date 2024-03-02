@@ -41,9 +41,9 @@ class DiveraStatusSelect(SelectEntity):
     def select_option(self, option: str) -> None:
         """Change the selected option."""
         _LOGGER.info("Status: %s", option)
-        id = self._connector.get_state_id_by_name(option)
+        id = self._connector.get_user_state_id(option)
         _LOGGER.debug("Status Id: %s", id)
-        self._connector.set_state(id)
+        self._connector.set_user_state(id)
 
     async def async_added_to_hass(self) -> None:
         """Set up a listener and load data."""
@@ -67,7 +67,7 @@ class DiveraStatusSelect(SelectEntity):
 
     @property
     def current_option(self):
-        return self._connector.get_state()
+        return self._connector.get_user_state()
 
     @property
     def icon(self):
@@ -81,7 +81,7 @@ class DiveraStatusSelect(SelectEntity):
     @property
     def extra_state_attributes(self):
         """Return the state attributes of the device."""
-        return self._connector.get_state_attributes()
+        return self._connector.get_user_state_attributes()
 
     @property
     def should_poll(self) -> bool:
